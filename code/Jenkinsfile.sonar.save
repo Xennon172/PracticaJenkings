@@ -1,0 +1,23 @@
+// ──────────────────────────────────────────────────
+//  JOB 5 – Escaneo SonarQube
+//  Disparado con cada push al repositorio (Webhook)
+// ──────────────────────────────────────────────────
+pipeline {
+    agent any
+
+    tools {
+        nodejs 'NodeJS'
+    }
+
+    triggers {
+        githubPush()
+    }
+
+    environment {
+        SONAR_SERVER = 'SonarQube'
+    }
+
+    stages {
+
+        stage('Checkout') {
+            

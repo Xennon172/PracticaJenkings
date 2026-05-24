@@ -1,7 +1,3 @@
-// ──────────────────────────────────────────────────
-//  JOB 5 – Escaneo SonarQube
-//  Disparado con cada push al repositorio (Webhook)
-// ──────────────────────────────────────────────────
 pipeline {
     agent any
 
@@ -33,11 +29,14 @@ pipeline {
             }
         }
 
-        stage('Análisis SonarQube') {
+        stage('Analisis SonarQube') {
             steps {
                 dir('code') {
                     withSonarQubeEnv("${SONAR_SERVER}") {
-                        sh 'sonar-scanner'
+                        sh """
+                            sonar-scanner \
+                            -Dsonar.token=${SONAR_AUTH_TOKEN}
+                        """
                     }
                 }
             }
@@ -54,10 +53,10 @@ pipeline {
 
     post {
         success {
-            echo '✅ Análisis SonarQube completado. Quality Gate superado.'
+            echo 'EXITO: Analisis SonarQube completado. Quality Gate superado.'
         }
         failure {
-            echo '❌ Quality Gate NO superado. Revisa SonarQube en http://localhost:9000'
+            echo 'FALLO: Quality Gate NO superado. Revisa SonarQube en http://localhost:9000'
         }
     }
 }
