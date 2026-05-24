@@ -1,0 +1,85 @@
+// ──────────────────────────────────────────────────────────────
+//  JOB 6 – Tests + envío de correo al pasar correctamente
+//  Requiere plugin: Email Extension (Mailer)
+//  Configurar SMTP en: Manage Jenkins → Configure System → E-mail
+// ──────────────────────────────────────────────────────────────
+pipeline {
+    agent any
+
+    tools {
+        nodejs 'NodeJS'
+    }
+
+    triggers {
+        githubPush()
+    }
+
+    stages {
+
+        stage('Checkout') {
+            steps {
+                checkout scm
+            }
+        }
+
+        stage('Instalar dependencias') {
+            steps {
+                sh 'npm install'
+            }
+        }
+
+        stage('Pasar tests') {
+            steps {
+                sh 'npm test'
+            }
+            post {
+                always {
+                    junit allowEmptyResults: true,
+                          testResults: 'test-results/results.xml'
+                }
+            }
+        }
+    }
+
+    post {
+        // ── Éxito → notifica a los dos usuarios ────────────────
+        success {
+            emailext (
+                subject: "✅ [Jenkins] Tests OK – ${env.JOB_NAME} #${env.BUILD_NUMBER}",
+                body: """
+                <h2>Build exitoso</h2>
+                <p>El job <strong>${env.JOB_NAME}</strong> ha pasado todos los tests correctamente.</p>
+                <ul>
+                    <li><b>Build:</b> #${env.BUILD_NUMBER}</li>
+                    <li><b>Rama:</b> ${env.GIT_BRANCH}</li>
+                    <li><b>Resultado:</b> ${currentBuild.currentResult}</li>
+                    <li><b>Duración:</b> ${currentBuild.durationString}</li>
+                </ul>
+                <p>Ver detalles: <a href="${env.BUILD_URL}">${env.BUILD_URL}</a></p>
+                """,
+                mimeType: 'text/html',
+                // Cambia estas direcciones por las de los dos usuarios Jenkins
+                to: 'usuario1@example.com, usuario2@example.com'
+            )
+        }
+
+        // ── Fallo → también notifica para que corrijan ─────────
+        failure {
+            emailext (
+                subject: "❌ [Jenkins] Tests FALLIDOS – ${env.JOB_NAME} #${env.BUILD_NUMBER}",
+                body: """
+                <h2>Build fallido</h2>
+                <p>El job <strong>${env.JOB_NAME}</strong> ha fallado en los tests.</p>
+                <ul>
+                    <li><b>Build:</b> #${env.BUILD_NUMBER}</li>
+                    <li><b>Rama:</b> ${env.GIT_BRANCH}</li>
+                    <li><b>Resultado:</b> ${currentBuild.currentResult}</li>
+                </ul>
+                <p>Ver logs: <a href="${env.BUILD_URL}console">${env.BUILD_URL}console</a></p>
+                """,
+                mimeType: 'text/html',
+                to: 'usuario1@example.com, usuario2@example.com'
+            )
+        }
+    }
+}

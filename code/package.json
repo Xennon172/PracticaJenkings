@@ -1,17 +1,19 @@
 {
   "name": "jenkins-tests",
   "version": "1.0.1",
-  "description": "",
+  "description": "Proyecto de pruebas Jenkins + SonarQube",
   "main": "index.js",
   "directories": {
-    "test": "tests"
+    "test": "test"
   },
   "dependencies": {},
   "devDependencies": {
-    "mocha": "^5.2.0"
+    "mocha": "^5.2.0",
+    "mocha-junit-reporter": "^2.2.0"
   },
   "scripts": {
-    "test": "mocha"
+    "test": "mocha --reporter mocha-junit-reporter --reporter-options mochaFile=./test-results/results.xml",
+    "test:local": "mocha"
   },
   "author": "",
   "license": "ISC"

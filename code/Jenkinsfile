@@ -1,0 +1,56 @@
+// ──────────────────────────────────────────────────
+//  JOB 4 – Tests Mocha + notificación de resultados
+//  Disparado con cada push al repositorio (Webhook)
+// ──────────────────────────────────────────────────
+pipeline {
+    agent any
+
+    tools {
+        // Nombre exacto configurado en:
+        // Manage Jenkins → Global Tool Configuration → NodeJS
+        nodejs 'NodeJS'
+    }
+
+    triggers {
+        // Webhook de GitHub  →  Jenkins recibe el push
+        githubPush()
+    }
+
+    stages {
+
+        stage('Checkout') {
+            steps {
+                checkout scm
+            }
+        }
+
+        stage('Instalar dependencias') {
+            steps {
+                sh 'npm install'
+            }
+        }
+
+        stage('Pasar tests') {
+            steps {
+                // mocha-junit-reporter genera XML para Jenkins
+                sh 'npm test'
+            }
+            post {
+                always {
+                    // Publica los resultados en la UI de Jenkins
+                    junit allowEmptyResults: true,
+                          testResults: 'test-results/results.xml'
+                }
+            }
+        }
+    }
+
+    post {
+        success {
+            echo '✅ Todos los tests han pasado correctamente.'
+        }
+        failure {
+            echo '❌ Algún test ha fallado. Revisa los logs.'
+        }
+    }
+}
