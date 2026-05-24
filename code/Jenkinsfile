@@ -47,6 +47,17 @@ pipeline {
         }
         failure {
             echo 'FALLO: Algun test ha fallado.'
+            emailext (
+                subject: "FALLO: Tests fallidos en ${env.JOB_NAME} #${env.BUILD_NUMBER}",
+                body: """
+Los tests han fallado en el job ${env.JOB_NAME}.
+
+Build: #${env.BUILD_NUMBER}
+Rama: ${env.GIT_BRANCH}
+Ver logs: ${env.BUILD_URL}console
+                """,
+                to: 'evaristolevante@gmail.com, gordon@gmail.com'
+            )
         }
     }
 }
