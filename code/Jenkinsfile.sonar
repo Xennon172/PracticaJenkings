@@ -14,8 +14,6 @@ pipeline {
     }
 
     environment {
-        // Nombre exacto del servidor configurado en:
-        // Manage Jenkins → Configure System → SonarQube servers
         SONAR_SERVER = 'SonarQube'
     }
 
@@ -29,24 +27,24 @@ pipeline {
 
         stage('Instalar dependencias') {
             steps {
-                sh 'npm install'
+                dir('code') {
+                    sh 'npm install'
+                }
             }
         }
 
         stage('Análisis SonarQube') {
             steps {
-                // withSonarQubeEnv inyecta automáticamente las variables
-                // SONAR_HOST_URL y SONAR_AUTH_TOKEN
-                withSonarQubeEnv("${SONAR_SERVER}") {
-                    // sonar-scanner usa sonar-project.properties de la raíz
-                    sh 'sonar-scanner'
+                dir('code') {
+                    withSonarQubeEnv("${SONAR_SERVER}") {
+                        sh 'sonar-scanner'
+                    }
                 }
             }
         }
 
         stage('Quality Gate') {
             steps {
-                // Espera el resultado del Quality Gate en SonarQube
                 timeout(time: 2, unit: 'MINUTES') {
                     waitForQualityGate abortPipeline: true
                 }
