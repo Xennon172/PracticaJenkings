@@ -6,13 +6,10 @@ pipeline {
     agent any
 
     tools {
-        // Nombre exacto configurado en:
-        // Manage Jenkins → Global Tool Configuration → NodeJS
         nodejs 'NodeJS'
     }
 
     triggers {
-        // Webhook de GitHub  →  Jenkins recibe el push
         githubPush()
     }
 
@@ -26,20 +23,22 @@ pipeline {
 
         stage('Instalar dependencias') {
             steps {
-                sh 'npm install'
+                dir('code') {
+                    sh 'npm install'
+                }
             }
         }
 
         stage('Pasar tests') {
             steps {
-                // mocha-junit-reporter genera XML para Jenkins
-                sh 'npm test'
+                dir('code') {
+                    sh 'npm test'
+                }
             }
             post {
                 always {
-                    // Publica los resultados en la UI de Jenkins
                     junit allowEmptyResults: true,
-                          testResults: 'test-results/results.xml'
+                          testResults: 'code/test-results/results.xml'
                 }
             }
         }
