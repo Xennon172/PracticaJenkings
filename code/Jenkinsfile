@@ -1,7 +1,3 @@
-// ──────────────────────────────────────────────────
-//  JOB 4 – Tests Mocha + notificación de resultados
-//  Disparado con cada push al repositorio (Webhook)
-// ──────────────────────────────────────────────────
 pipeline {
     agent any
 
@@ -46,10 +42,11 @@ pipeline {
 
     post {
         success {
-            echo '✅ Todos los tests han pasado correctamente.'
+            echo 'EXITO: Todos los tests han pasado.'
+            build job: 'JobTest2', wait: false
         }
         failure {
-            echo '❌ Algún test ha fallado. Revisa los logs.'
+            echo 'FALLO: Algun test ha fallado.'
         }
     }
 }
